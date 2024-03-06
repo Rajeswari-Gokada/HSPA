@@ -1,60 +1,30 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, throwError } from 'rxjs';
-import { IProperty } from '../model/iproperty';
 import { Property } from '../model/property';
-import { IPropertyBase } from '../model/ipropertybase';
-//import { IProperty } from '../property/IProperty.interface';
+import {environment} from '../../environments/environment';
+
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class HousingService {
 
+baseUrl = environment.baseUrl;
 constructor(private http: HttpClient) { }
 
+getAllCities(): Observable<string[]> {
+  return this.http.get<string[]>(this.baseUrl+ '/city/cities');
+}
+
 getProperty(id:number){
-  return this.getAllProperties().pipe(
-    map(propertiesArray => {
-      //throw new Error('Some error');
-      return propertiesArray.find(p => p.Id === id);
-    })
-  );
+  return this.http.get<Property>(this.baseUrl + '/property/detail/'+id.toString());
 }
 
 
  getAllProperties(SellRent?: number): Observable<Property[]>{
-  return this.http.get('data/properties.json').pipe(
-    map(data => {
-      const propertiesArray: Array<Property>=[];
-      const localProperties= JSON.parse(localStorage.getItem('newProp'));
-      if(localProperties){
-        for (const id in localProperties){
-          if(SellRent){
-          if(localProperties.hasOwnProperty(id) && localProperties[id].SellRent ===SellRent){
-            propertiesArray.push(localProperties[id]);
-          }
-          }else{
-            propertiesArray.push(localProperties[id]);
-          }
-        }
-      }
-
-
-
-      for (const id in data){
-        if(SellRent){
-        if(data.hasOwnProperty(id) && data[id].SellRent ===SellRent){
-          propertiesArray.push(data[id]);
-        }
-      }else{
-        propertiesArray.push(data[id]);
-      }
-    }
-      return propertiesArray;
-    })
-  );
-  return this.http.get<Property[]>('data/properties.json');
+    return this.http.get<Property[]>(this.baseUrl + '/property/list/' + SellRent.toExponential.toString());
  }
  addProperty(property: Property) {
   let newProp = [property];
@@ -76,6 +46,30 @@ newPropID() {
     localStorage.setItem('PID', '101');
     return 101;
   }
+}
+
+getPropertyAge(dateofEstablishment: Date) : string
+{
+  const today = new Date();
+  const estDate = new Date(dateofEstablishment);
+  let age = today.getFullYear() - estDate.getFullYear();
+  const m = today.getMonth() - estDate.getMonth();
+
+  //current month smaller than establishment month or
+  // Same month but current date smaller than establishment date
+  if (m <0 ||(m===0 && today.getDate() < estDate.getDate())){
+    age --;
+  }
+  //Establishment date is future date
+  if(today < estDate){
+    return '0';
+  }
+
+  //Age is less than a year
+  if(age ===0){
+    return 'Less than a year';
+  }
+  return age.toString();
 }
 
 }

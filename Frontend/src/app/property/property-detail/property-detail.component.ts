@@ -40,6 +40,8 @@ galleryImages: NgxGalleryImage[];
       }
     );
 
+    this.property.age = this.housingService.getPropertyAge(this.property.estPossessionOn);
+
     this.galleryOptions = [
       {
         width: '100%',
